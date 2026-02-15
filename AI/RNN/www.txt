@@ -1,0 +1,531 @@
+/*
+
+from A_pre.cpp
+
+*/
+
+
+#include<bits/stdc++.h>
+using namespace std;
+using dl = double;
+using ll = long long;
+#define ff first
+#define ss second
+// double random(){
+//     return (double)rand() / 32767 + (double)rand() / (32767*32767.0);
+// }
+
+static std::mt19937 gen(1337);
+double random_z() {
+    // static std::mt19937 gen(1337);
+    static std::uniform_real_distribution<double> dis(0.0, 1.0);
+    return dis(gen);
+}
+
+
+#define sampleSize 100000
+
+dl fixed_sin(dl x){
+    return sin(x*2*3.14159265358979323846);
+}
+
+#define adj(x) if(abs(x)>1e6){x*=0.99;}if(x>1e8){x=1e8;}if(x<-1e8){x=-1e8;}
+
+dl training_rate = 0.0003;
+
+template<int InSize, int OutSize>
+struct Layer {
+    dl W[InSize][OutSize];
+    dl B[OutSize];
+
+    dl dlW[InSize][OutSize]={};
+    dl dlB[OutSize]={};
+
+    dl mB[OutSize]={};
+    dl mW[InSize][OutSize]={};
+    dl vB[OutSize]={};
+    dl vW[InSize][OutSize]={};
+
+    
+    int trained_data = 0;
+
+    Layer() {
+        std::normal_distribution<dl> dis(0.0, std::sqrt(2.0 / (InSize+OutSize)));
+        
+        for (int i = 0; i < InSize; ++i){
+            for (int j = 0; j < OutSize; ++j){
+                W[i][j] = dis(gen);
+                dlW[i][j] = 0;
+            }
+        }
+        for (int j = 0; j < OutSize; ++j){
+            B[j] = dis(gen);
+            dlB[j] = 0;
+        }
+            
+    }
+
+    static constexpr int param_count() {
+        return InSize * OutSize + OutSize;
+    }
+
+    //run this layer
+    inline void run(dl* input,dl* output){
+        for(int i = 0;i<OutSize;i++){
+            output[i] = 0;
+        }
+        for(int i = 0;i<InSize;i++){
+            for(int j = 0;j<OutSize;j++){
+                output[j] += input[i]*W[i][j];
+            }
+        }
+        for(int j = 0;j<OutSize;j++){
+            output[j] += B[j];
+        }
+    }
+
+    //only calculate gradient
+    inline void rev(dl* input, dl* output) {
+        for(int i = 0;i<InSize;i++){
+            output[i] = 0;
+        }
+        for(int i = 0;i<InSize;i++){
+            for(int j = 0;j<OutSize;j++){
+                output[i] += input[j]*W[i][j];
+            }
+        }
+    }
+    // y: the result from layer/step
+    // input: the gradient travle from the next layer/step
+    // output: the gradient to last layer
+    inline void train(dl* y, dl* input,dl* output){
+        rev(input,output);
+        
+        for(int i = 0;i<InSize;i++){
+            for(int j = 0;j<OutSize;j++){
+                dlW[i][j]+=y[i]*input[j];
+            }
+        }
+        for(int j = 0;j<OutSize;j++){
+            dlB[j]+=input[j];
+        }
+        trained_data++;
+    }
+
+    //active the weight changes using adam optimizer
+    inline void act_train(ll step,dl beta1t,dl beta2t){
+        if(trained_data == 0){
+            printf("Warn: tried to active train on a layer with no trained data\n");
+            return;
+        }
+
+        dl rev_trained_data = 1.0/trained_data; // trained_data is NOT zero
+        for(int i = 0;i<InSize;i++){
+            for(int j = 0;j<OutSize;j++){
+                dlW[i][j]*=rev_trained_data;
+                mW[i][j] = 0.9*mW[i][j] + 0.1*dlW[i][j];
+                vW[i][j] = 0.999*vW[i][j] + 0.001*dlW[i][j]*dlW[i][j];
+                W[i][j] -= training_rate * (mW[i][j]/(1.0-beta1t))/(sqrt(vW[i][j]/(1.0-beta2t)) + 1e-6);
+                W[i][j] *= (1-training_rate*1e-5);
+                adj(W[i][j]);
+                dlW[i][j] = 0;
+            }
+        }
+        
+        for(int j = 0;j<OutSize;j++){
+            dlB[j]*=rev_trained_data;
+            mB[j] = 0.9*mB[j] + 0.1*dlB[j];
+            vB[j] = 0.999*vB[j] + 0.001*dlB[j]*dlB[j];
+            B[j] -= training_rate * (mB[j]/(1.0-beta1t))/(sqrt(vB[j]/(1.0-beta2t)) + 1e-6);
+            B[j] *= (1-training_rate*1e-5);
+            adj(B[j]);
+            dlB[j] = 0;
+        }
+        trained_data = 0;
+    }
+
+    
+};
+
+//activation function
+template<int Size>
+struct acf{
+
+    // inline dl fc(dl x){
+    //     return tanh(x);
+    // }
+
+    inline dl fc(dl x){
+        if(x>0){
+            return x;
+        }else{
+            return 0.02*x;
+        }
+        
+    }
+
+    // inline dl dfc(dl x){
+    //     return 1.0 - tanh(x)*tanh(x);
+    // }
+
+    //input : tanh(x)
+    //because tanh'(x) = 1-(tanh(x))^2
+    //reduce the calcution 
+    // inline dl dfc(dl x){
+    //     return 1.0 - x*x;
+    // }
+
+    inline dl dfc(dl x){
+        if(x>0){
+            return 1;
+        }else{
+            return 0.02;
+        }
+    }
+
+    inline void run(dl* input,dl* output){
+        for(int i = 0;i<Size;i++){
+            output[i] = fc(input[i]);
+        }
+    }
+
+    inline void rev(dl* y, dl* input, dl* output) {
+        for(int i = 0; i < Size; i++) {
+            output[i] = input[i] * dfc(y[i]);
+        }
+    }
+
+};
+
+//gradient fixer
+template<int Size>
+void fix_gradient(dl* gradient){
+    dl g2 = 0;
+    for(int i = 0;i<Size;i++){
+        g2 += gradient[i]*gradient[i];
+    }
+
+    if(g2 < 1 || g2 > 100){
+        dl target = sqrt(min((dl)100, max((dl)1, g2)));
+        dl factor = target / sqrt(g2 + 1e-8);
+        for(int i = 0;i<Size;i++){
+            gradient[i] *= factor;
+        }
+    }
+}
+
+
+template<int InSize,int HiddenSize,int OutSize,int depth>
+struct NN{
+    Layer<InSize,HiddenSize> input_layer;
+    Layer<HiddenSize,HiddenSize> hidden_layer[depth];
+    Layer<HiddenSize,OutSize> output_layer;
+    acf<HiddenSize> active_fc;
+    dl V[depth+1][HiddenSize];
+    dl Vinput[InSize];
+
+    dl beta1t = 1;
+    dl beta2t = 1;
+
+    ll step = 0;
+
+    bool enable_fix_gradient = false;
+
+    const int input_len = InSize, hidden_len = HiddenSize, output_len = OutSize, _depth = depth;
+
+    void run(dl* input,dl* output){
+        memcpy(Vinput,input,InSize * sizeof(dl));
+        input_layer.run(input,V[0]);
+        active_fc.run(V[0],V[0]); //activation func can handle this
+
+        for(int i = 0;i<depth;i++){
+            hidden_layer[i].run(V[i],V[i+1]);
+            active_fc.run(V[i+1],V[i+1]); //activation func can handle this
+        }
+        output_layer.run(V[depth],output);
+    }
+
+    //copy the data that can be use to train later
+    void copy_record(dl* target_V,dl* target_Vinput){
+        memcpy(target_V, V, sizeof(V));
+        memcpy(target_Vinput, Vinput, sizeof(Vinput));
+    }
+
+    //only calculate the gradient
+    //input the gradiend from next step(or another NN), and out put the gradiend of last step
+    void rev(dl* input, dl* output){
+        dl gradient[HiddenSize],gradient2[HiddenSize];
+        output_layer.rev(input,gradient);
+        dl* now_gradient = gradient2,*last_gradient = gradient;
+        for(int i = depth-1;i>=0;i--){
+            active_fc.rev(V[i+1],last_gradient,last_gradient);
+            hidden_layer[i].rev(last_gradient,now_gradient);
+            swap(last_gradient,now_gradient);
+        }
+        active_fc.rev(V[0],last_gradient,last_gradient);
+        input_layer.rev(input,last_gradient,now_gradient);
+        if(enable_fix_gradient)fix_gradient<OutSize>(gradient);
+        memcpy(output, now_gradient ,sizeof(gradient));
+        
+    }
+
+    //train this NN directly using copied data and gradient
+    void train_directly(dl (*copied_V)[HiddenSize],dl* copied_Vinput, dl* dl_output, dl* dl_last = nullptr){
+        dl gradient[HiddenSize],gradient2[HiddenSize];
+        output_layer.train(copied_V[depth],dl_output,gradient);
+        dl* now_gradient = gradient2,*last_gradient = gradient;
+        for(int i = depth-1;i>=0;i--){
+            if(enable_fix_gradient)fix_gradient<HiddenSize>(last_gradient);
+            active_fc.rev(copied_V[i+1],last_gradient,last_gradient);
+            hidden_layer[i].train(copied_V[i],last_gradient,now_gradient);
+            swap(last_gradient,now_gradient);
+        }
+        if(enable_fix_gradient)fix_gradient<HiddenSize>(last_gradient);
+        active_fc.rev(copied_V[0],last_gradient,last_gradient);
+        input_layer.train(copied_Vinput,last_gradient,now_gradient);
+        //copy to output gradient
+        if(dl_last != nullptr){
+            memcpy(dl_last, now_gradient ,sizeof(gradient));
+        }
+    }
+
+    //train this NN using real data, return loss
+    dl train(dl* input, dl* real_value, dl* dl_last = nullptr){
+        dl pred[OutSize];               
+        run(input, pred);
+        dl dl_output[OutSize];
+        dl loss = 0;
+        for (int i = 0; i < OutSize; ++i){
+            dl_output[i] = 2.0 * (pred[i] - real_value[i]);
+            loss += dl_output[i]*dl_output[i];
+        }
+        train_directly(V, Vinput, dl_output, dl_last);
+        return loss/OutSize;
+    }
+
+    //active the weight changes
+    void active_train(){
+        beta1t*=0.9;
+        beta2t*=0.999;
+        step++;
+        input_layer.act_train(step,beta1t,beta2t);
+        for(int i = 0;i<depth;i++){
+            hidden_layer[i].act_train(step,beta1t,beta2t);
+        }
+        output_layer.act_train(step,beta1t,beta2t);
+    }
+};
+
+
+template<int InSize,int OutSize>
+struct single_data{
+    dl x[InSize];
+    dl y[OutSize];
+};
+
+
+int main(){
+    vector<single_data<2,1>> train_data(sampleSize);
+    for(int i = 0;i<sampleSize;i++){
+        dl x1 = random_z(),x2 = random_z();;
+        train_data[i]={
+            {
+                x1,x2
+            },
+            {
+                (x1+x2)*0.5
+            }
+        };
+    }
+    NN<2,4,1,100> nn;
+    nn.enable_fix_gradient = true;
+    vector<queue<int>> rtrain_data(5);
+    for(int i = 0;i<sampleSize;i++){
+        rtrain_data[0].push(i);
+    }
+    // auto train_helper = [&](single_data<2,1> td){
+    //     nn.train(td.x,td.y);
+    // };
+    dl loss_gap = 0.5;
+    int cnt = 0;
+    for(int t = 0;cnt<sampleSize*100;t++){
+        if(t/sampleSize<20){
+            training_rate = 0.0001*((dl)t/(dl)sampleSize+1);
+        }else{
+            training_rate = 0.001 / (1 + (dl)t/(dl)sampleSize * 0.2);
+        }
+        if(t/sampleSize>50){
+            nn.enable_fix_gradient = false;
+        }
+
+        if(t>0 && cnt%100 == 0)nn.active_train();
+        if(t>0 && cnt%sampleSize == 0){
+            dl loss = 0;
+            for(auto [x,y]:train_data){
+                dl pred[1];
+                nn.run(x,pred);
+                loss += (pred[0]-y[0])*(pred[0]-y[0]);
+            }
+            printf("st: %d cnt: %d loss: %lf loss_gap: %lf\n",t,cnt,loss/sampleSize,loss_gap);
+        }
+
+
+        int td_idx = -1;
+        int dtype = -1;
+        
+        dl total = rtrain_data[0].size()*16 +
+                   rtrain_data[1].size()*8 +
+                   rtrain_data[2].size()*4 +
+                   rtrain_data[3].size()*2 +
+                   rtrain_data[4].size()*1;
+        dl rr = random_z()*total;
+        if((rr -= rtrain_data[0].size()*16) < 0){
+            if(rtrain_data[0].empty()){continue;}
+            td_idx = rtrain_data[0].front();rtrain_data[0].pop();
+            dtype = 0;
+        }else if((rr -= rtrain_data[1].size()*8) < 0){
+            if(rtrain_data[1].empty()){continue;}
+            td_idx = rtrain_data[1].front();rtrain_data[1].pop();
+            dtype = 1;
+        }else if((rr -= rtrain_data[2].size()*4) < 0){
+            if(rtrain_data[2].empty()){continue;}
+            td_idx = rtrain_data[2].front();rtrain_data[2].pop();
+            dtype = 2;
+        }else if((rr -= rtrain_data[3].size()*2) < 0){
+            if(rtrain_data[3].empty()){continue;}
+            td_idx = rtrain_data[3].front();rtrain_data[3].pop();
+            dtype = 3;
+        }else{
+            if(rtrain_data[4].empty()){continue;}
+            td_idx = rtrain_data[4].front();rtrain_data[4].pop();
+            dtype = 4;
+        }
+
+        cnt++;
+        single_data<2,1> td = train_data[td_idx];
+        dl single_loss = nn.train(td.x,td.y);
+        if(single_loss>loss_gap){
+            dtype = 0;
+        }else{
+            dtype = min(4,dtype+1);
+        }
+        rtrain_data[dtype].push(td_idx);
+        loss_gap = loss_gap*(((dl)sampleSize-1.0)/(dl)sampleSize) + single_loss*(1.0/(dl)sampleSize);
+        // for(auto td:train_data){
+        //     train_helper(td);
+        //     cnt++;
+        //     if(cnt>=100){
+        //         nn.active_train();
+        //         cnt = 0;
+        //     }
+        // }
+
+        
+        
+    }
+
+}
+
+
+
+/*
+st: 100000 cnt: 100000 loss: 0.041679 loss_gap: 0.289074
+st: 200000 cnt: 200000 loss: 0.042626 loss_gap: 0.239455
+st: 300000 cnt: 300000 loss: 0.041636 loss_gap: 0.260165
+st: 400000 cnt: 400000 loss: 0.047241 loss_gap: 0.299585
+st: 500000 cnt: 500000 loss: 0.013788 loss_gap: 0.154376
+st: 600000 cnt: 600000 loss: 0.010626 loss_gap: 0.087547
+st: 700000 cnt: 700000 loss: 0.000371 loss_gap: 0.033537
+st: 800000 cnt: 800000 loss: 0.000382 loss_gap: 0.013815
+st: 900000 cnt: 900000 loss: 0.004939 loss_gap: 0.019313
+st: 1000000 cnt: 1000000 loss: 0.005574 loss_gap: 0.015251
+st: 1100000 cnt: 1100000 loss: 0.000759 loss_gap: 0.014386
+st: 1200000 cnt: 1200000 loss: 0.009540 loss_gap: 0.014948
+st: 1300000 cnt: 1300000 loss: 0.003586 loss_gap: 0.596371
+st: 1400000 cnt: 1400000 loss: 0.041917 loss_gap: 0.453221
+st: 1500000 cnt: 1500000 loss: 0.007341 loss_gap: 0.337532
+st: 1600000 cnt: 1600000 loss: 0.000477 loss_gap: 0.132077
+st: 1700000 cnt: 1700000 loss: 0.000595 loss_gap: 0.050741
+st: 1800000 cnt: 1800000 loss: 0.037200 loss_gap: 12899145.931347
+st: 1900000 cnt: 1900000 loss: 0.041659 loss_gap: 1108482849408162304.000000
+st: 2000000 cnt: 2000000 loss: 0.025157 loss_gap: 407786012241500864.000000
+st: 2100000 cnt: 2100000 loss: 0.023958 loss_gap: 150015340218041696.000000
+st: 2200000 cnt: 2200000 loss: 0.024798 loss_gap: 55187283587859728.000000
+st: 2300000 cnt: 2300000 loss: 0.028097 loss_gap: 20302165534405580.000000
+st: 2400000 cnt: 2400000 loss: 0.026711 loss_gap: 7468711967498989.000000
+st: 2500000 cnt: 2500000 loss: 0.026384 loss_gap: 2747571846901359.500000
+st: 2600000 cnt: 2600000 loss: 0.025048 loss_gap: 1010770141724023.875000
+st: 2700000 cnt: 2700000 loss: 0.016143 loss_gap: 371839695676397.812500
+st: 2800000 cnt: 2800000 loss: 0.006910 loss_gap: 136791495487665.171875
+st: 2900000 cnt: 2900000 loss: 0.006012 loss_gap: 50322527302293.968750
+st: 3000000 cnt: 3000000 loss: 0.005684 loss_gap: 18512530658885.199219
+st: 3100000 cnt: 3100000 loss: 0.005537 loss_gap: 6810345381451.668945
+st: 3200000 cnt: 3200000 loss: 0.005663 loss_gap: 2505373526141.907715
+st: 3300000 cnt: 3300000 loss: 0.005743 loss_gap: 921670804330.725342
+st: 3400000 cnt: 3400000 loss: 0.005664 loss_gap: 339062045116.991882
+st: 3500000 cnt: 3500000 loss: 0.005537 loss_gap: 124733332008.273178
+st: 3600000 cnt: 3600000 loss: 0.005265 loss_gap: 45886599039.766678
+st: 3700000 cnt: 3700000 loss: 0.004633 loss_gap: 16880652008.054886
+st: 3800000 cnt: 3800000 loss: 0.003569 loss_gap: 6210013777.014634
+st: 3900000 cnt: 3900000 loss: 0.002521 loss_gap: 2284524975.242386
+st: 4000000 cnt: 4000000 loss: 0.002489 loss_gap: 840425569.077612
+st: 4100000 cnt: 4100000 loss: 0.002190 loss_gap: 309173742.822712
+st: 4200000 cnt: 4200000 loss: 0.002109 loss_gap: 113738095.044696
+st: 4300000 cnt: 4300000 loss: 0.001972 loss_gap: 41841697.639998
+st: 4400000 cnt: 4400000 loss: 0.001838 loss_gap: 15392623.386645
+st: 4500000 cnt: 4500000 loss: 0.001714 loss_gap: 5662601.380970
+st: 4600000 cnt: 4600000 loss: 0.001598 loss_gap: 2083144.220081
+st: 4700000 cnt: 4700000 loss: 0.001416 loss_gap: 766342.103729
+st: 4800000 cnt: 4800000 loss: 0.001368 loss_gap: 281920.098871
+st: 4900000 cnt: 4900000 loss: 0.001324 loss_gap: 103712.093238
+st: 5000000 cnt: 5000000 loss: 0.001249 loss_gap: 38153.359387
+st: 5100000 cnt: 5100000 loss: 0.001190 loss_gap: 14035.769478
+st: 5200000 cnt: 5200000 loss: 0.001285 loss_gap: 5163.454823
+st: 5300000 cnt: 5300000 loss: 0.001260 loss_gap: 1899.522629
+st: 5400000 cnt: 5400000 loss: 0.001240 loss_gap: 698.795108
+st: 5500000 cnt: 5500000 loss: 0.001216 loss_gap: 257.074325
+st: 5600000 cnt: 5600000 loss: 0.001220 loss_gap: 94.575040
+st: 5700000 cnt: 5700000 loss: 0.003449 loss_gap: 34.799084
+st: 5800000 cnt: 5800000 loss: 0.001104 loss_gap: 12.805128
+st: 5900000 cnt: 5900000 loss: 0.000997 loss_gap: 4.713979
+st: 6000000 cnt: 6000000 loss: 0.001090 loss_gap: 1.736944
+st: 6100000 cnt: 6100000 loss: 0.001256 loss_gap: 0.641872
+st: 6200000 cnt: 6200000 loss: 0.001079 loss_gap: 0.238795
+st: 6300000 cnt: 6300000 loss: 0.000921 loss_gap: 0.090196
+st: 6400000 cnt: 6400000 loss: 0.001022 loss_gap: 0.035799
+st: 6500000 cnt: 6500000 loss: 0.000953 loss_gap: 0.018502
+st: 6600000 cnt: 6600000 loss: 0.001182 loss_gap: 0.012350
+st: 6700000 cnt: 6700000 loss: 0.000635 loss_gap: 0.008974
+st: 6800000 cnt: 6800000 loss: 0.000453 loss_gap: 0.006563
+st: 6900000 cnt: 6900000 loss: 0.000402 loss_gap: 0.004300
+st: 7000000 cnt: 7000000 loss: 0.000211 loss_gap: 0.002958
+st: 7100000 cnt: 7100000 loss: 0.000131 loss_gap: 0.002066
+st: 7200000 cnt: 7200000 loss: 0.000121 loss_gap: 0.001630
+st: 7300000 cnt: 7300000 loss: 0.000092 loss_gap: 0.001366
+st: 7400000 cnt: 7400000 loss: 0.000066 loss_gap: 0.001009
+st: 7500000 cnt: 7500000 loss: 0.000053 loss_gap: 0.000717
+st: 7600000 cnt: 7600000 loss: 0.000045 loss_gap: 0.000577
+st: 7700000 cnt: 7700000 loss: 0.000072 loss_gap: 0.000464
+st: 7800000 cnt: 7800000 loss: 0.000098 loss_gap: 0.000406
+st: 7900000 cnt: 7900000 loss: 0.000107 loss_gap: 0.000344
+st: 8000000 cnt: 8000000 loss: 0.000033 loss_gap: 0.000306
+st: 8100000 cnt: 8100000 loss: 0.000027 loss_gap: 0.000254
+st: 8200000 cnt: 8200000 loss: 0.000021 loss_gap: 0.000228
+st: 8300000 cnt: 8300000 loss: 0.000020 loss_gap: 0.000212
+st: 8400000 cnt: 8400000 loss: 0.000030 loss_gap: 0.000180
+st: 8500000 cnt: 8500000 loss: 0.000012 loss_gap: 0.000175
+st: 8600000 cnt: 8600000 loss: 0.000028 loss_gap: 0.000159
+st: 8700000 cnt: 8700000 loss: 0.000008 loss_gap: 0.000149
+st: 8800000 cnt: 8800000 loss: 0.000008 loss_gap: 0.000129
+st: 8900000 cnt: 8900000 loss: 0.000010 loss_gap: 0.000117
+st: 9000000 cnt: 9000000 loss: 0.000007 loss_gap: 0.000107
+st: 9100000 cnt: 9100000 loss: 0.000006 loss_gap: 0.000098
+st: 9200000 cnt: 9200000 loss: 0.000034 loss_gap: 0.000102
+st: 9300000 cnt: 9300000 loss: 0.000006 loss_gap: 0.000095
+st: 9400000 cnt: 9400000 loss: 0.000006 loss_gap: 0.000098
+st: 9500000 cnt: 9500000 loss: 0.000006 loss_gap: 0.000099
+st: 9600000 cnt: 9600000 loss: 0.000004 loss_gap: 0.000100
+st: 9700000 cnt: 9700000 loss: 0.000010 loss_gap: 0.000096
+st: 9800000 cnt: 9800000 loss: 0.000005 loss_gap: 0.000273
+st: 9900000 cnt: 9900000 loss: 0.000010 loss_gap: 0.000141
+*/

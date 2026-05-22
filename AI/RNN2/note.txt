@@ -1,0 +1,3 @@
+use this to compile:
+g++ -Ofast -march=native -funroll-loops -fopenmp -fopt-info-vec-optimized -Wall -Wextra
+g++ -Ofast -march=native -funroll-loops -fopt-info-vec-optimized -Wall -Wextra

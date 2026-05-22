@@ -1,0 +1,309 @@
+st: 500, pred: 47, loss: 0.000053, curr loss: 0.003079, self pred loss: 0.833584
+pred loss: begin: 0.363755  mid: 0.925850  end: 0.909156
+hsm: avg: 0.003793 avg_late: 0.012312
+loaded_data: 300000
+
+st: 501, pred: 47, loss: 0.000053, curr loss: 0.003116, self pred loss: 0.832881
+pred loss: begin: 0.363732  mid: 0.924550  end: 0.909736
+hsm: avg: 0.005025 avg_late: 0.016446
+loaded_data: 300000
+
+st: 502, pred: 47, loss: 0.000053, curr loss: 0.003000, self pred loss: 0.836037
+pred loss: begin: 0.363983  mid: 0.927563  end: 0.915499
+hsm: avg: 0.001751 avg_late: 0.012767
+loaded_data: 300000
+
+st: 503, pred: 48, loss: 0.000053, curr loss: 0.003398, self pred loss: 0.834488
+pred loss: begin: 0.363778  mid: 0.927904  end: 0.907271
+hsm: avg: 0.003207 avg_late: 0.012201
+loaded_data: 300000
+
+st: 504, pred: 48, loss: 0.000053, curr loss: 0.003406, self pred loss: 0.835466
+pred loss: begin: 0.363834  mid: 0.928403  end: 0.910379
+hsm: avg: 0.004634 avg_late: 0.021592
+loaded_data: 300000
+
+st: 505, pred: 48, loss: 0.000053, curr loss: 0.003743, self pred loss: 0.836333
+pred loss: begin: 0.363880  mid: 0.930386  end: 0.908513
+hsm: avg: 0.009555 avg_late: 0.028059
+loaded_data: 300000
+
+st: 506, pred: 48, loss: 0.000053, curr loss: 0.003472, self pred loss: 0.833060
+pred loss: begin: 0.363739  mid: 0.926129  end: 0.905843
+hsm: avg: 0.004840 avg_late: 0.018355
+loaded_data: 300000
+
+st: 507, pred: 48, loss: 0.000053, curr loss: 0.003452, self pred loss: 0.833052
+pred loss: begin: 0.363699  mid: 0.925262  end: 0.908436
+hsm: avg: 0.003543 avg_late: 0.018124
+loaded_data: 300000
+
+st: 508, pred: 48, loss: 0.000053, curr loss: 0.003365, self pred loss: 0.833454
+pred loss: begin: 0.363708  mid: 0.926765  end: 0.905832
+hsm: avg: 0.005080 avg_late: 0.020880
+loaded_data: 300000
+
+st: 509, pred: 48, loss: 0.000053, curr loss: 0.003377, self pred loss: 0.833374
+pred loss: begin: 0.363703  mid: 0.926779  end: 0.905414
+hsm: avg: 0.002245 avg_late: 0.011789
+loaded_data: 300000
+
+st: 510, pred: 48, loss: 0.000053, curr loss: 0.003366, self pred loss: 0.833554
+pred loss: begin: 0.363761  mid: 0.926554  end: 0.906900
+hsm: avg: 0.002564 avg_late: 0.009690
+loaded_data: 300000
+
+st: 511, pred: 48, loss: 0.000053, curr loss: 0.003445, self pred loss: 0.833664
+pred loss: begin: 0.363744  mid: 0.926824  end: 0.906624
+hsm: avg: 0.006318 avg_late: 0.015429
+loaded_data: 300000
+
+st: 512, pred: 48, loss: 0.000053, curr loss: 0.003405, self pred loss: 0.833609
+pred loss: begin: 0.363670  mid: 0.927626  end: 0.904012
+hsm: avg: 0.003873 avg_late: 0.013076
+loaded_data: 300000
+
+st: 513, pred: 48, loss: 0.000053, curr loss: 0.003594, self pred loss: 0.832743
+pred loss: begin: 0.363516  mid: 0.926015  end: 0.904849
+hsm: avg: 0.002852 avg_late: 0.012242
+loaded_data: 300000
+
+st: 514, pred: 48, loss: 0.000053, curr loss: 0.003710, self pred loss: 0.833424
+pred loss: begin: 0.363682  mid: 0.925855  end: 0.908438
+hsm: avg: 0.002929 avg_late: 0.020879
+loaded_data: 300000
+
+st: 515, pred: 48, loss: 0.000053, curr loss: 0.003360, self pred loss: 0.834727
+pred loss: begin: 0.363805  mid: 0.927735  end: 0.908896
+hsm: avg: 0.003333 avg_late: 0.013698
+loaded_data: 300000
+
+st: 516, pred: 48, loss: 0.000053, curr loss: 0.003396, self pred loss: 0.834683
+pred loss: begin: 0.363831  mid: 0.927383  end: 0.909721
+hsm: avg: 0.002559 avg_late: 0.015752
+loaded_data: 300000
+
+st: 517, pred: 48, loss: 0.000053, curr loss: 0.003554, self pred loss: 0.832926
+pred loss: begin: 0.363656  mid: 0.925106  end: 0.908340
+hsm: avg: 0.002016 avg_late: 0.014432
+loaded_data: 300000
+
+st: 518, pred: 48, loss: 0.000054, curr loss: 0.003370, self pred loss: 0.833736
+pred loss: begin: 0.363667  mid: 0.927197  end: 0.905904
+hsm: avg: 0.002969 avg_late: 0.013893
+loaded_data: 300000
+
+st: 519, pred: 48, loss: 0.000054, curr loss: 0.003556, self pred loss: 0.834264
+pred loss: begin: 0.363681  mid: 0.925567  end: 0.913290
+hsm: avg: 0.002127 avg_late: 0.012620
+loaded_data: 300000
+
+st: 520, pred: 48, loss: 0.000054, curr loss: 0.003429, self pred loss: 0.835120
+pred loss: begin: 0.363713  mid: 0.928430  end: 0.908746
+hsm: avg: 0.003236 avg_late: 0.014583
+loaded_data: 300000
+
+st: 521, pred: 48, loss: 0.000054, curr loss: 0.003372, self pred loss: 0.835556
+pred loss: begin: 0.363752  mid: 0.927330  end: 0.914089
+hsm: avg: 0.002692 avg_late: 0.010946
+loaded_data: 300000
+
+st: 522, pred: 48, loss: 0.000054, curr loss: 0.003306, self pred loss: 0.834228
+pred loss: begin: 0.363622  mid: 0.926650  end: 0.909915
+hsm: avg: 0.002618 avg_late: 0.016302
+loaded_data: 300000
+
+st: 523, pred: 48, loss: 0.000054, curr loss: 0.003325, self pred loss: 0.835382
+pred loss: begin: 0.363748  mid: 0.927586  end: 0.912493
+hsm: avg: 0.007586 avg_late: 0.022896
+loaded_data: 300000
+
+st: 524, pred: 48, loss: 0.000054, curr loss: 0.003371, self pred loss: 0.832725
+pred loss: begin: 0.363656  mid: 0.924417  end: 0.909452
+hsm: avg: 0.003420 avg_late: 0.015757
+loaded_data: 300000
+
+st: 525, pred: 48, loss: 0.000054, curr loss: 0.003406, self pred loss: 0.834879
+pred loss: begin: 0.363888  mid: 0.926251  end: 0.914005
+hsm: avg: 0.004045 avg_late: 0.017614
+loaded_data: 300000
+
+st: 526, pred: 48, loss: 0.000054, curr loss: 0.003447, self pred loss: 0.832522
+pred loss: begin: 0.363722  mid: 0.924274  end: 0.908865
+hsm: avg: 0.002761 avg_late: 0.009528
+loaded_data: 300000
+
+st: 527, pred: 48, loss: 0.000054, curr loss: 0.003449, self pred loss: 0.833757
+pred loss: begin: 0.363819  mid: 0.925665  end: 0.910488
+hsm: avg: 0.003913 avg_late: 0.012802
+loaded_data: 300000
+
+st: 528, pred: 48, loss: 0.000054, curr loss: 0.003269, self pred loss: 0.833666
+pred loss: begin: 0.363718  mid: 0.926053  end: 0.908965
+hsm: avg: 0.003056 avg_late: 0.013726
+loaded_data: 300000
+
+st: 529, pred: 48, loss: 0.000054, curr loss: 0.003577, self pred loss: 0.833016
+pred loss: begin: 0.363682  mid: 0.926430  end: 0.904773
+hsm: avg: 0.005153 avg_late: 0.019812
+loaded_data: 300000
+
+st: 530, pred: 48, loss: 0.000054, curr loss: 0.003693, self pred loss: 0.831438
+pred loss: begin: 0.363522  mid: 0.922936  end: 0.907881
+hsm: avg: 0.003548 avg_late: 0.012127
+loaded_data: 300000
+
+st: 531, pred: 48, loss: 0.000054, curr loss: 0.003572, self pred loss: 0.832710
+pred loss: begin: 0.363709  mid: 0.923720  end: 0.911431
+hsm: avg: 0.001120 avg_late: 0.021460
+loaded_data: 300000
+
+st: 532, pred: 48, loss: 0.000054, curr loss: 0.003334, self pred loss: 0.833675
+pred loss: begin: 0.363749  mid: 0.925335  end: 0.911137
+hsm: avg: 0.005021 avg_late: 0.018392
+loaded_data: 300000
+
+st: 533, pred: 48, loss: 0.000054, curr loss: 0.003427, self pred loss: 0.832297
+pred loss: begin: 0.363665  mid: 0.924267  end: 0.907862
+hsm: avg: 0.004313 avg_late: 0.021408
+loaded_data: 300000
+
+st: 534, pred: 48, loss: 0.000054, curr loss: 0.003499, self pred loss: 0.832044
+pred loss: begin: 0.363567  mid: 0.924173  end: 0.907015
+hsm: avg: 0.003304 avg_late: 0.012098
+loaded_data: 300000
+
+st: 535, pred: 48, loss: 0.000054, curr loss: 0.003372, self pred loss: 0.833189
+pred loss: begin: 0.363698  mid: 0.924940  end: 0.910056
+hsm: avg: 0.003907 avg_late: 0.013841
+loaded_data: 300000
+
+st: 536, pred: 48, loss: 0.000054, curr loss: 0.003382, self pred loss: 0.834061
+pred loss: begin: 0.363796  mid: 0.926211  end: 0.910311
+hsm: avg: 0.002974 avg_late: 0.009835
+loaded_data: 300000
+
+st: 537, pred: 48, loss: 0.000054, curr loss: 0.003548, self pred loss: 0.831633
+pred loss: begin: 0.363598  mid: 0.922629  end: 0.909672
+hsm: avg: 0.005757 avg_late: 0.017221
+loaded_data: 300000
+
+st: 538, pred: 48, loss: 0.000054, curr loss: 0.003504, self pred loss: 0.832020
+pred loss: begin: 0.363614  mid: 0.923037  end: 0.910276
+hsm: avg: 0.003649 avg_late: 0.011434
+loaded_data: 300000
+
+st: 539, pred: 48, loss: 0.000054, curr loss: 0.003661, self pred loss: 0.833500
+pred loss: begin: 0.363785  mid: 0.926252  end: 0.907530
+hsm: avg: 0.003727 avg_late: 0.012718
+loaded_data: 300000
+
+st: 540, pred: 48, loss: 0.000054, curr loss: 0.003339, self pred loss: 0.831875
+pred loss: begin: 0.363494  mid: 0.923685  end: 0.907732
+hsm: avg: 0.001365 avg_late: 0.008595
+loaded_data: 300000
+
+st: 541, pred: 48, loss: 0.000054, curr loss: 0.003441, self pred loss: 0.832717
+pred loss: begin: 0.363732  mid: 0.923635  end: 0.911702
+hsm: avg: 0.002657 avg_late: 0.010604
+loaded_data: 300000
+
+st: 542, pred: 48, loss: 0.000054, curr loss: 0.003330, self pred loss: 0.834129
+pred loss: begin: 0.363722  mid: 0.925714  end: 0.912178
+hsm: avg: 0.004578 avg_late: 0.020940
+loaded_data: 300000
+
+st: 543, pred: 48, loss: 0.000054, curr loss: 0.003365, self pred loss: 0.833698
+pred loss: begin: 0.363717  mid: 0.924672  end: 0.913262
+hsm: avg: 0.002802 avg_late: 0.015310
+loaded_data: 300000
+
+st: 544, pred: 48, loss: 0.000054, curr loss: 0.003386, self pred loss: 0.834057
+pred loss: begin: 0.363632  mid: 0.925059  end: 0.913870
+hsm: avg: 0.003167 avg_late: 0.015421
+loaded_data: 300000
+
+st: 545, pred: 48, loss: 0.000054, curr loss: 0.003274, self pred loss: 0.832864
+pred loss: begin: 0.363477  mid: 0.924524  end: 0.909920
+hsm: avg: 0.001943 avg_late: 0.014202
+loaded_data: 300000
+
+st: 546, pred: 48, loss: 0.000054, curr loss: 0.003391, self pred loss: 0.833589
+pred loss: begin: 0.363515  mid: 0.924026  end: 0.914831
+hsm: avg: 0.001357 avg_late: 0.018508
+loaded_data: 300000
+
+st: 547, pred: 48, loss: 0.000054, curr loss: 0.003327, self pred loss: 0.834536
+pred loss: begin: 0.363516  mid: 0.926473  end: 0.911992
+hsm: avg: 0.004630 avg_late: 0.017419
+loaded_data: 300000
+
+st: 548, pred: 48, loss: 0.000054, curr loss: 0.003390, self pred loss: 0.835382
+pred loss: begin: 0.363527  mid: 0.926995  end: 0.914437
+hsm: avg: 0.005149 avg_late: 0.025741
+loaded_data: 300000
+
+st: 549, pred: 48, loss: 0.000054, curr loss: 0.003364, self pred loss: 0.833097
+pred loss: begin: 0.363295  mid: 0.925131  end: 0.909344
+hsm: avg: 0.006164 avg_late: 0.019410
+loaded_data: 300000
+
+st: 550, pred: 48, loss: 0.000054, curr loss: 0.003393, self pred loss: 0.834847
+pred loss: begin: 0.363425  mid: 0.926850  end: 0.912406
+hsm: avg: 0.005209 avg_late: 0.015430
+loaded_data: 300000
+
+st: 551, pred: 48, loss: 0.000054, curr loss: 0.003444, self pred loss: 0.834600
+pred loss: begin: 0.363396  mid: 0.925756  end: 0.914535
+hsm: avg: 0.009640 avg_late: 0.019034
+loaded_data: 300000
+
+st: 552, pred: 48, loss: 0.000054, curr loss: 0.003482, self pred loss: 0.835914
+pred loss: begin: 0.363540  mid: 0.927398  end: 0.915745
+hsm: avg: 0.002678 avg_late: 0.018178
+loaded_data: 300000
+
+st: 553, pred: 48, loss: 0.000054, curr loss: 0.003826, self pred loss: 0.837571
+pred loss: begin: 0.363603  mid: 0.929582  end: 0.917014
+hsm: avg: 0.003400 avg_late: 0.018223
+loaded_data: 300000
+
+st: 554, pred: 48, loss: 0.000054, curr loss: 0.003663, self pred loss: 0.835767
+pred loss: begin: 0.363377  mid: 0.926271  end: 0.918544
+hsm: avg: 0.009534 avg_late: 0.022517
+loaded_data: 300000
+
+st: 555, pred: 48, loss: 0.000054, curr loss: 0.003516, self pred loss: 0.835521
+pred loss: begin: 0.363367  mid: 0.926506  end: 0.916682
+hsm: avg: 0.002454 avg_late: 0.010818
+loaded_data: 300000
+
+st: 556, pred: 48, loss: 0.000054, curr loss: 0.003759, self pred loss: 0.837607
+pred loss: begin: 0.363577  mid: 0.928889  end: 0.919281
+hsm: avg: 0.007902 avg_late: 0.021449
+loaded_data: 300000
+
+st: 557, pred: 48, loss: 0.000054, curr loss: 0.003796, self pred loss: 0.837079
+pred loss: begin: 0.363464  mid: 0.928619  end: 0.917669
+hsm: avg: 0.012230 avg_late: 0.023015
+loaded_data: 300000
+
+st: 558, pred: 48, loss: 0.000054, curr loss: 0.003726, self pred loss: 0.834188
+pred loss: begin: 0.363221  mid: 0.923812  end: 0.918543
+hsm: avg: 0.002468 avg_late: 0.015692
+loaded_data: 300000
+
+st: 559, pred: 48, loss: 0.000054, curr loss: 0.003593, self pred loss: 0.836333
+pred loss: begin: 0.363430  mid: 0.927893  end: 0.916330
+hsm: avg: 0.005332 avg_late: 0.022200
+loaded_data: 300000
+
+st: 560, pred: 48, loss: 0.000054, curr loss: 0.003633, self pred loss: 0.836212
+pred loss: begin: 0.363343  mid: 0.927053  end: 0.918340
+hsm: avg: 0.002570 avg_late: 0.013430
+loaded_data: 300000
+
+st: 561, pred: 48, loss: 0.000054, curr loss: 0.003829, self pred loss: 0.837454
+pred loss: begin: 0.363471  mid: 0.929116  end: 0.917954
+hsm: avg: 0.003796 avg_late: 0.013860
+loaded_data: 300000

@@ -25,34 +25,7 @@ dl fixed_sin(dl x){
 
 #define adj(x) if(abs(x)>1e6){x*=0.99;}if(x>1e8){x=1e8;}if(x<-1e8){x=-1e8;}
 
-#define RNN_PRED_LEN 100
-
 dl training_rate = 0.0003;
-
-
-namespace fast_hash {
-    //this part written by ai
-constexpr uint64_t mixer(uint64_t x) {
-    x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
-    x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
-    x = x ^ (x >> 31);
-    return x;
-}
-
-constexpr uint64_t combine(uint64_t seed, uint64_t v) {
-    seed ^= mixer(v) + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
-    return seed;
-}
-
-template <typename... Args>
-constexpr uint64_t compute(Args... args) {
-    uint64_t seed = 0;
-    ((seed = combine(seed, static_cast<uint64_t>(args))), ...);
-    return seed;
-}
-
-}//namespace fast_hash
-
 
 template<int InSize, int OutSize>
 struct Layer {
@@ -308,7 +281,7 @@ struct NN{
             swap(last_gradient,now_gradient);
         }
         active_fc.rev(V[0],last_gradient,last_gradient);
-        input_layer.rev(last_gradient,output);
+        input_layer.rev(input,output);
         gfix.fix(output,InSize); // output last gradiend to front, so it's InSize
         //memcpy(output, now_gradient ,sizeof(dl)*InSize);
     }
@@ -335,7 +308,7 @@ struct NN{
 
     //train this NN using real data
     void train(dl* input, dl* real_value, dl* dl_last = nullptr){
-        dl pred[OutSize];               
+        dl pred[OutSize];
         run(input, pred);
         dl dl_output[OutSize];
         for (int i = 0; i < OutSize; ++i) dl_output[i] = 2.0 * (pred[i] - real_value[i]);
@@ -377,16 +350,6 @@ struct RNN{
     NN<InSize+MemorySize,HiddenSize,OutSize+MemorySize,depth> nn;
     static constexpr int BUF = (InSize + MemorySize > OutSize + MemorySize)
                     ? (InSize + MemorySize) : (OutSize + MemorySize);
-
-
-    static constexpr int input_size = InSize;
-    static constexpr int hidden_size = HiddenSize;
-    static constexpr int output_size = OutSize;
-    static constexpr int memory_size = MemorySize;
-    static constexpr int data_len = DataLen;
-    static constexpr int layers = depth;
-    static constexpr long long hash_code = fast_hash::compute(InSize, HiddenSize, OutSize, MemorySize, depth);
-
     dl V[DataLen][depth+1][HiddenSize];
     dl Vinput[DataLen][BUF];
 
@@ -517,6 +480,7 @@ struct RNN_RUNNER<RNN<InSize, HiddenSize, OutSize, MemorySize, DataLen, depth>> 
                     ? (InSize + MemorySize) : (OutSize + MemorySize);
     
     dl memory[BUF];
+    
     RNN_Type& rnn;
     RNN_RUNNER(RNN_Type &trnn) : rnn(trnn) {
         reset();
@@ -547,54 +511,43 @@ struct RNN_data{
     dl y[Len][OutSize]={};
 };
 
-using Data = RNN_data<1,1,RNN_PRED_LEN>;
+using Data = RNN_data<1,1,100>;
 
 Data gen_data(dl a,dl b,dl rd=0.0){
     Data d;
     static normal_distribution<dl> distribution(0.0, rd);
-    for(int i = 0;i<RNN_PRED_LEN;i++){
+    for(int i = 0;i<100;i++){
         d.x[i][0] = fixed_sin(a + b*i);
-        if(i>7&&rd>0)d.x[i][0] += distribution(gen);
-        d.x[i][0] = min(max(d.x[i][0],-1.0),1.0);
+        if(rd>0)d.x[i][0] += distribution(gen);
         d.y[i][0] = fixed_sin(a + b*(i+1));
     }
-    // for(int i = 0;i<RNN_PRED_LEN;i++){
+    // for(int i = 0;i<100;i++){
     //     d.x[i][0] = i%2;
     //     d.y[i][0] = (i+1)%2;
     // }
     return d;
 }
 
-template<int batch>
+template<int data_size,int batch>
 struct hard_sample_mine{
     vector<queue<int>> qu{batch};
     dl avg = 0.5;
     dl late_avg = 0.75;
-    int exist_data = 0;
-    hard_sample_mine(int d){
-        exist_data = d;
-        for(int i = 0;i<d;i++){
+    hard_sample_mine(){
+        for(int i = 0;i<data_size;i++){
             qu[0].push(i);
         }
     }
-    void reset(int d){
-        exist_data = d;
+    void reset(){
         avg = 0.5;
         late_avg = 0.75;
         for(int i = 0;i<batch;i++){
             while(!qu[i].empty()) qu[i].pop();
         }
-        for(int i = 0;i<d;i++){
+        for(int i = 0;i<data_size;i++){
             qu[0].push(i);
         }
     }
-    void extand(int d){
-        for(int i = exist_data;i<d;i++){
-            qu[0].push(i);
-        }
-        exist_data = d;
-    }
-
     pair<int,int> get_index(dl mul){
         assert(mul>=1);
         dl sum = 0.0;
@@ -639,81 +592,23 @@ struct hard_sample_mine{
     }
 };
 
-
-template<typename T>
-void save_bin(T& rnn, string filename) {
-    ofstream f(filename, ios::binary);
-    if (!f) return;
-    char header_buf[256];
-    int len = snprintf(header_buf, sizeof(header_buf), 
-             "RNN_CONFIG In:%d Hid:%d Out:%d Mem:%d Len:%d Lay:%d\n",
-             T::input_size, T::hidden_size, T::output_size, 
-             T::memory_size, T::data_len, T::layers);
-    
-    f.write(header_buf, len);
-
-    f.write((char*)&rnn.hash_code, sizeof(long long));
-    
-    f.write((char*)rnn.h0, sizeof(rnn.h0));
-    
-    f.write((char*)&rnn.nn.input_layer, sizeof(rnn.nn.input_layer));
-    f.write((char*)rnn.nn.hidden_layer, sizeof(rnn.nn.hidden_layer));
-    f.write((char*)&rnn.nn.output_layer, sizeof(rnn.nn.output_layer));
-
-    f.close();
-    printf("[IO] Saved %s with readable header.\n", filename.c_str());
-}
-
-template<typename T>
-void load_bin(T& rnn, string filename) {
-    ifstream f(filename, ios::binary);
-    if(!f) {
-        printf("[IO] Load failed: %s\n", filename.c_str());
-        assert(false);
-    }
-
-    string line;
-    if (!getline(f, line)) { 
-        printf("[IO] Error: Empty file %s\n", filename.c_str());
-        assert(false);
-    }
-    long long hc;
-    f.read((char*)&hc, sizeof(long long));
-    if(rnn.hash_code != hc){
-        printf("[IO] Error: doesn't match structure %s\n", filename.c_str());
-        assert(false);
-    }
-
-    f.read((char*)rnn.h0, sizeof(rnn.h0));
-
-    f.read((char*)&rnn.nn.input_layer, sizeof(rnn.nn.input_layer));
-    f.read((char*)rnn.nn.hidden_layer, sizeof(rnn.nn.hidden_layer));
-    f.read((char*)&rnn.nn.output_layer, sizeof(rnn.nn.output_layer));
-    
-    f.close();
-    printf("[IO] Loaded %s successfully.\n", filename.c_str());
-}
-
-
-
-using T_RNN = RNN<1, 128, 1, 127, RNN_PRED_LEN, 2>;
-
 int main(){
     printf("loading...\n");
     TrainConfig config;
-    auto rnn_ptr = make_unique<T_RNN>(config);
+    auto rnn_ptr = make_unique<RNN<1, 100, 1, 99, 100, 1>>(config);
     auto& rnn = *rnn_ptr;
     config.enable_fix_gradient = true;
     config.clip_high = 5.0; 
     config.clip_low = -1.0;
     constexpr int n = 100000;
-    auto train_data_ptr = make_unique<array<Data, n*3>>();
-    auto& train_data = *train_data_ptr;
-    hard_sample_mine<5> hsm(n);hsm.reset(n);
+    auto train_data_ptr = make_unique<array<Data, n>>();
+    auto train_data_ptr2 = make_unique<array<Data, n>>();
+    auto train_data_ptr3 = make_unique<array<Data, n>>();
+    auto train_data_ptr4 = make_unique<array<Data, n>>();
+    array<Data, n>* train_ptr = train_data_ptr.get();
+    hard_sample_mine<n,5> hsm;hsm.reset();
     printf("gen data...\n");
     normal_distribution<dl> distribution(0.15, 0.02);
-
-    load_bin<T_RNN>(rnn,"rnn_700_1682723281.rnn");
 
     // for(int i = 0;i<n;i++){
     //     dl a = random_z();
@@ -734,43 +629,27 @@ int main(){
     for(int i = 0;i<n;i++){
         dl a = random_z();
         dl b = min(random_z(),random_z())*0.4+0.05;
-        train_data[i] = gen_data(a,b);
+        (*train_data_ptr4)[i] = gen_data(a,b);
     }
-    for(int i = n;i<n*2;i++){
-        dl a = random_z();
-        dl b = min(random_z(),random_z())*0.4+0.05;
-        train_data[i] = gen_data(a,b,0.25);
-    }
-    for(int i = n*2;i<n*3;i++){
-        dl a = random_z();
-        dl b = min(random_z(),random_z())*0.4+0.05;
-        train_data[i] = gen_data(a,b,0.5);
-    }
+
     printf("start training\n");
     int cnt = 0;
     int self_pred = 0;
     int cool_down = 0;
     int end_cnt = 0;
     dl curr_loss = 100.0;
-    int loaded_data = n;
+    train_ptr = train_data_ptr4.get();
     // printf("=====dataset 1 training started=====\n\n");
-    for(int t = 0;false;t++){
+    for(int t = 0;true;t++){
         if(t<20){
             training_rate = 0.000005*(t+1);
-        }else{
+        }else if(t<51){
             training_rate = 0.0001 / sqrt(t);
         }
         
-        if(loaded_data<2*n&&curr_loss<0.003){
-            loaded_data = min(loaded_data+n/20,n*2);
-            hsm.extand(loaded_data);
-        }
-        if(loaded_data>=2*n&&loaded_data<3*n&&curr_loss<0.003){
-            loaded_data = min(loaded_data+n/100,n*3);
-            hsm.extand(loaded_data);
-        }
-        if(t>100&&loaded_data == 3*n){
-            training_rate = 0.00003 * pow(0.97,self_pred) * pow(0.99,t);
+        
+        if(t>50){
+            training_rate = 0.00002 * pow(0.999,self_pred) / sqrt(t);
             if(curr_loss>=0.005){
                 cool_down = 3;
             }
@@ -814,11 +693,11 @@ int main(){
         //     cool_down = 10;
         //     hsm.reset();
         // }
-        for(int i = 0;i<2000;i++){
+        for(int i = 0;i<3000;i++){
             auto [id,batch_id] = hsm.get_index(2.71828);
             if(id < 0) continue;
-            auto td = train_data[id];
-            dl hardness = rnn.train(td.x,td.y,RNN_PRED_LEN,5,RNN_PRED_LEN-self_pred);
+            auto td = (*train_ptr)[id];
+            dl hardness = rnn.train(td.x,td.y,100,5,100-self_pred);
             // hardness = min(hardness,5.0);
             hsm.push(id,batch_id,hardness);
             cnt++;
@@ -829,53 +708,41 @@ int main(){
         dl sel_loss = 0;
         dl sl_loss1 = 0;dl sl_loss2 = 0;dl sl_loss3 = 0;
         curr_loss = 0;
-        for(int i = 0;i<300;i++){
-            auto td = train_data[i];
-            if(i>=100 && loaded_data>n){
-                td = train_data[i-100+n];
+        for(int i = 0;i<min(200,n);i++){
+            auto& td = (*train_ptr)[i];
+            dl pred[100][1];
+            rnn.run(td.x,pred,100);
+            for(int i = 5;i<100;i++){
+                loss+=(pred[i][0]-td.y[i][0])*(pred[i][0]-td.y[i][0]);
             }
-            if(i>=200 && loaded_data>n*2){
-                td = train_data[i-200+n*2];
-            }
-            dl pred[RNN_PRED_LEN][1];
-            rnn.run(td.x,pred,RNN_PRED_LEN);
-            for(int j = 5;j<RNN_PRED_LEN;j++){
-                loss+=(pred[j][0]-td.y[j][0])*(pred[j][0]-td.y[j][0]);
-            }
-            rnn.run_self_pred(td.x,pred,RNN_PRED_LEN,5);
-            for(int j = 5;j<RNN_PRED_LEN;j++){
-                sel_loss+=(pred[j][0]-td.y[j][0])*(pred[j][0]-td.y[j][0]);
-                if(5<=j && j<(int)(RNN_PRED_LEN*0.2)){
-                    sl_loss1+=(pred[j][0]-td.y[j][0])*(pred[j][0]-td.y[j][0]);
-                }else if((int)(RNN_PRED_LEN*0.2)<=j && j<(int)(RNN_PRED_LEN*0.8)){
-                    sl_loss2+=(pred[j][0]-td.y[j][0])*(pred[j][0]-td.y[j][0]);
+            rnn.run_self_pred(td.x,pred,100,5);
+            for(int i = 5;i<100;i++){
+                sel_loss+=(pred[i][0]-td.y[i][0])*(pred[i][0]-td.y[i][0]);
+                if(5<=i && i<20){
+                    sl_loss1+=(pred[i][0]-td.y[i][0])*(pred[i][0]-td.y[i][0]);
+                }else if(20<=i && i<80){
+                    sl_loss2+=(pred[i][0]-td.y[i][0])*(pred[i][0]-td.y[i][0]);
                 }else{
-                    sl_loss3+=(pred[j][0]-td.y[j][0])*(pred[j][0]-td.y[j][0]);
+                    sl_loss3+=(pred[i][0]-td.y[i][0])*(pred[i][0]-td.y[i][0]);
                 }
             }
-            rnn.run_self_pred(td.x,pred,RNN_PRED_LEN,RNN_PRED_LEN-self_pred);
-            for(int j = RNN_PRED_LEN-self_pred;j<RNN_PRED_LEN;j++){
-                curr_loss+=(pred[j][0]-td.y[j][0])*(pred[j][0]-td.y[j][0]);
+            rnn.run_self_pred(td.x,pred,100,100-self_pred);
+            for(int i = 100-self_pred;i<100;i++){
+                curr_loss+=(pred[i][0]-td.y[i][0])*(pred[i][0]-td.y[i][0]);
             }
         }
-        loss /= (RNN_PRED_LEN-5) * (dl)200;
-        sel_loss /= (RNN_PRED_LEN-5) * (dl)200;
-        sl_loss1 /= (int)(RNN_PRED_LEN*0.15) * (dl)200;
-        sl_loss2 /= (int)(RNN_PRED_LEN*0.6) * (dl)200;
-        sl_loss3 /= (int)(RNN_PRED_LEN*0.2) * (dl)200;
+        loss /= 95.0 * (dl)200;
+        sel_loss /= 95.0 * (dl)200;
+        sl_loss1 /= 15.0 * (dl)200;
+        sl_loss2 /= 60.0 * (dl)200;
+        sl_loss3 /= 20.0 * (dl)200;
         curr_loss /= self_pred * 200.0;
         if(self_pred == 0){
             curr_loss = loss;
         }
         printf("st: %d, pred: %d, loss: %lf, curr loss: %lf, self pred loss: %lf\n",t,self_pred,loss,curr_loss,sel_loss);
-        printf("pred loss: begin: %lf  mid: %lf  end: %lf\n",sl_loss1,sl_loss2,sl_loss3);
-        printf("hsm: avg: %lf avg_late: %lf\n",hsm.avg,hsm.late_avg);
-        printf("loaded_data: %d\n\n",loaded_data);
-
-        if(t%100 == 0 && t!=0){
-            string file_name = "rnn_" + to_string(t) + "_" + to_string(rand()) + to_string(rand())+ ".rnn";
-            save_bin<T_RNN>(rnn,file_name);
-        }
+        printf("pred loss: begin: %lf  mid: %lf  end: %lf\n",sl_loss1,sl_loss2,sl_loss3);
+        printf("hsm: avg: %lf avg_late: %lf\n\n",hsm.avg,hsm.late_avg);
     }
     //RNN_RUNNER<remove_reference_t<decltype(rnn)>> runner(rnn); //wtf is this
     while(1){
@@ -887,24 +754,24 @@ int main(){
         int dd;
         scanf("%d",&dd);
         printf("\n");
-        if(dd<0 || dd>RNN_PRED_LEN){
+        if(dd<0 || dd>100){
             printf("NO\n");
             continue;
         }
         Data td = gen_data(a,b);
         int i = 0;
-        dl pred[RNN_PRED_LEN][1];
-        rnn.run_self_pred(td.x,pred,RNN_PRED_LEN,dd);
+        dl pred[100][1];
+        rnn.run_self_pred(td.x,pred,100,dd);
         printf("\n\nans: ");
-        for(i = 0;i<RNN_PRED_LEN;i++){
+        for(i = 0;i<100;i++){
             printf("%lf ",td.y[i][0]);
         }printf("\n\n");
         printf("pred:");
-        for(i = 0;i<RNN_PRED_LEN;i++){
+        for(i = 0;i<100;i++){
             printf("%lf ",pred[i][0]);
         }printf("\n\n");
         printf("err:");
-        for(i = 0;i<RNN_PRED_LEN;i++){
+        for(i = 0;i<100;i++){
             printf("%lf ",pred[i][0]-td.y[i][0]);
         }printf("\n");
     }

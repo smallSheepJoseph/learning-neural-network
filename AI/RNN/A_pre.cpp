@@ -330,7 +330,7 @@ int main(){
             }
         };
     }
-    NN<2,8,1,200> nn;
+    NN<2,4,1,100> nn;
     nn.enable_fix_gradient = true;
     vector<queue<int>> rtrain_data(5);
     for(int i = 0;i<sampleSize;i++){
@@ -357,7 +357,7 @@ int main(){
             for(auto [x,y]:train_data){
                 dl pred[1];
                 nn.run(x,pred);
-                loss += (pred[0]-y[0])*(pred[0]-y[0]);
+                loss += 2.0*(pred[0]-y[0])*(pred[0]-y[0]);
             }
             printf("st: %d cnt: %d loss: %.20lf loss_gap: %.20lf\n",t,cnt,loss/sampleSize,loss_gap);
         }

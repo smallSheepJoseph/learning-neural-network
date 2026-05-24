@@ -30,7 +30,7 @@ about 20% made by AI, 80% by me.
 - as a stracture test, input x,y and output (x+y)/2
 - added a simple gradient fixer
 ### B_fib.cpp:
-- a fake RNN, which is just a multi-layer MLP add a single memory, not to every single layer
+- a fake RNN, which is just a multi-layer MLP with a single memory, not to every single layer
 - Use one-hot code to train this model
 ### C_sinwave.cpp:
 - file-io added, though this part is mostly made by al
@@ -43,7 +43,7 @@ about 20% made by AI, 80% by me.
 ### A_st.cpp:
 - fully rewrite the model structure
 - train all parameters in a single for loop
-- can change active function easily
+- can change the active function easily
 ### B_fib.cpp:
 - single-layer RNN
 ### C_fib2.cpp:

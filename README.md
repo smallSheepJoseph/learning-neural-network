@@ -12,7 +12,7 @@ about 20% made by AI, 80% by me.
 - used to predict the sine function
 ### layer2.cpp:
 - separated layer of MLP part as a struct called "Layer", input and output size can be easily changed
-- input x, output sin(x*2pi) and sin(x*4pi) in the same time
+- input x, output sin(x\*2pi) and sin(x*4pi) in the same time
 ### layer3.cpp:
 - no special change in the model structure
 - Use a Fourier-like input to recreate the original value
@@ -29,11 +29,12 @@ about 20% made by AI, 80% by me.
 - train more frequently on large-loss testcases
 - as a stracture test, input x,y and output (x+y)/2
 - added a simple gradient fixer
+- a 100-depth MLP model without any residual connection
 ### B_fib.cpp:
 - a fake RNN, which is just a multi-layer MLP with a single memory, not to every single layer
 - Use one-hot code to train this model
 ### C_sinwave.cpp:
-- file-io added, though this part is mostly made by al
+- file-io added, though ai mostly makes this part
 - Try to predict the whole sine wave by just giving the first few points
 - doesn't work well, the AI fixed version(C_sinwave_AI.cpp) also doesn't work well
 - Maybe it's due to the incorrect stacked-RNN implementation, and this is somehow too hard for this model
